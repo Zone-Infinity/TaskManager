@@ -1,41 +1,42 @@
 package me.isoham.taskmanager.model;
 
-public class Task {
-    private int id;
-    private String title;
-    private String description;
-    private TaskStatus status;
-    private int userId;
+import jakarta.persistence.*;
 
-    public Task(String title, String description, TaskStatus status, int userId) {
+@Entity
+@Table(name = "tasks")
+public class Task {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
+
+    private String title;
+
+    private String description;
+
+    @Enumerated(EnumType.STRING)
+    private TaskStatus status;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    public Task() {
+    }
+
+    public Task(String title, String description, TaskStatus status, User user) {
         this.title = title;
         this.description = description;
         this.status = status;
-        this.userId = userId;
+        this.user = user;
     }
 
-    public int getUserId() {
-        return userId;
+    public int getId() {
+        return id;
     }
 
-    public void setUserId(int userId) {
-        this.userId = userId;
-    }
-
-    public TaskStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(TaskStatus status) {
-        this.status = status;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
+    public void setId(int id) {
+        this.id = id;
     }
 
     public String getTitle() {
@@ -46,11 +47,27 @@ public class Task {
         this.title = title;
     }
 
-    public int getId() {
-        return id;
+    public String getDescription() {
+        return description;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public TaskStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(TaskStatus status) {
+        this.status = status;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 }

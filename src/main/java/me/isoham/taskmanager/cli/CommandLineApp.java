@@ -143,7 +143,7 @@ public class CommandLineApp {
                 title,
                 description,
                 TaskStatus.TODO,
-                currentUser.getId()
+                currentUser
         );
 
         if (created) {
@@ -154,7 +154,7 @@ public class CommandLineApp {
     }
 
     private void handleListTasks() {
-        var tasks = taskService.getTasksForUser(currentUser.getId());
+        var tasks = taskService.getTasksForUser(currentUser);
 
         if (tasks.isEmpty()) {
             System.out.println("No tasks.");

@@ -3,6 +3,7 @@ package me.isoham.taskmanager.service;
 import me.isoham.taskmanager.dao.TaskDAO;
 import me.isoham.taskmanager.model.Task;
 import me.isoham.taskmanager.model.TaskStatus;
+import me.isoham.taskmanager.model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,22 +18,22 @@ public class TaskService {
         this.taskDAO = taskDAO;
     }
 
-    public boolean createTask(String title, String description, TaskStatus status, int userId) {
-        Task task = new Task(title, description, status, userId);
+    public boolean createTask(String title, String description, TaskStatus status, User user) {
+        Task task = new Task(title, description, status, user);
 
         boolean created = taskDAO.createTask(task);
 
         if (created) {
-            LOGGER.info("Task '{}' created for user {}", title, userId);
+            LOGGER.info("Task '{}' created for user {}", title, user.getUsername());
         } else {
-            LOGGER.warn("Failed to create task '{}' for user {}", title, userId);
+            LOGGER.warn("Failed to create task '{}' for user {}", title, user.getUsername());
         }
 
         return created;
     }
 
-    public List<Task> getTasksForUser(int userId) {
-        return taskDAO.getTasksByUserId(userId);
+    public List<Task> getTasksForUser(User user) {
+        return taskDAO.getTasksByUser(user);
     }
 
     public boolean updateTaskStatus(int taskId, TaskStatus status) {

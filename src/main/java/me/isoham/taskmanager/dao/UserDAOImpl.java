@@ -1,12 +1,12 @@
 package me.isoham.taskmanager.dao;
 
-import me.isoham.taskmanager.config.DatabaseConnection;
+import me.isoham.taskmanager.config.HibernateUtil;
 import me.isoham.taskmanager.model.User;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Optional;
 
 public class UserDAOImpl implements UserDAO {
@@ -14,19 +14,13 @@ public class UserDAOImpl implements UserDAO {
 
     @Override
     public boolean createUser(User user) {
-        String sql = """
-                INSERT INTO users (username, password)
-                VALUES (?, ?)
-                """;
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            Transaction tx = session.beginTransaction();
+            session.persist(user);
+            tx.commit();
 
-        try (var conn = DatabaseConnection.getConnection(); var stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, user.getUsername());
-            stmt.setString(2, user.getPassword());
-
-            int rowsAffected = stmt.executeUpdate();
-
-            return rowsAffected == 1;
-        } catch (SQLException e) {
+            return true;
+        } catch (Exception e) {
             LOGGER.error("Error creating user", e);
             return false;
         }
@@ -34,26 +28,14 @@ public class UserDAOImpl implements UserDAO {
 
     @Override
     public Optional<User> findByUsername(String username) {
-        String sql = """
-                SELECT id, username, password
-                FROM users
-                WHERE username = ?
-                """;
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            String hql = "FROM User WHERE username = :username";
+            User user = session.createQuery(hql, User.class).setParameter("username", username).uniqueResult();
 
-        try (var conn = DatabaseConnection.getConnection(); var stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, username);
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (!rs.next()) return Optional.empty();
-
-                User user = new User(rs.getString("username"), rs.getString("password"));
-                user.setId(rs.getInt("id"));
-                return Optional.of(user);
-            }
-        } catch (SQLException e) {
-            LOGGER.error("Error finding user by username", e);
+            return Optional.ofNullable(user);
+        } catch (Exception e) {
+            LOGGER.error("Error finding user", e);
+            return Optional.empty();
         }
-
-        return Optional.empty();
     }
 }
