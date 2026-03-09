@@ -14,7 +14,7 @@ public class User {
 
     private String username;
 
-    private String password;
+    private String passwordHash;
 
     @OneToMany(mappedBy = "user")
     private Set<Task> tasks;
@@ -22,9 +22,9 @@ public class User {
     public User() {
     }
 
-    public User(String username, String password) {
+    public User(String username, String passwordHash) {
         this.username = username;
-        this.password = password;
+        this.passwordHash = passwordHash;
     }
 
     public int getId() {
@@ -43,12 +43,12 @@ public class User {
         this.username = username;
     }
 
-    public String getPassword() {
-        return password;
+    public String getPasswordHash() {
+        return passwordHash;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    public void setPasswordHash(String password) {
+        this.passwordHash = password;
     }
 
     public Set<Task> getTasks() {
