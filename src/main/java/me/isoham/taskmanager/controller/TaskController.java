@@ -79,4 +79,9 @@ public class TaskController {
                 task.getStatus().name()
         );
     }
+
+    @DeleteMapping("/{taskId}")
+    public void deleteTask(@PathVariable int taskId) {
+        taskService.deleteTask(taskId);
+    }
 }
