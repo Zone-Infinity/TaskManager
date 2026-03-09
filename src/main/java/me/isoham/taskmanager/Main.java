@@ -1,9 +1,11 @@
 package me.isoham.taskmanager;
 
-import me.isoham.taskmanager.cli.CommandLineApp;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+@SpringBootApplication
 public class Main {
-    static void main() {
-        new CommandLineApp().run();
+    static void main(String[] args) {
+        SpringApplication.run(Main.class, args);
     }
 }

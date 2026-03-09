@@ -1,39 +1,20 @@
 package me.isoham.taskmanager.service;
 
-import me.isoham.taskmanager.dao.UserDAO;
 import me.isoham.taskmanager.model.User;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import me.isoham.taskmanager.repository.UserRepository;
+import org.springframework.stereotype.Service;
 
-import java.util.Optional;
-
+@Service
 public class UserService {
-    private static final Logger LOGGER = LoggerFactory.getLogger(UserService.class);
-    private final UserDAO dao;
+    private final UserRepository userRepository;
 
-    public UserService(UserDAO dao) {
-        this.dao = dao;
+    public UserService(UserRepository userRepository) {
+        this.userRepository = userRepository;
     }
 
-    public Optional<User> loginUser(String username, String password) {
-        Optional<User> optionalUser = dao.findByUsername(username);
-        if (optionalUser.isEmpty()) return Optional.empty();
+    public User register(String username, String password) {
+        User user = new User(username, password);
 
-        User user = optionalUser.get();
-        if (!password.equals(user.getPassword())) return Optional.empty();
-
-        return Optional.of(user);
-    }
-
-    public boolean registerUser(String username, String password) {
-        Optional<User> optionalUser = dao.findByUsername(username);
-        if (optionalUser.isPresent()) {
-            LOGGER.warn("Username {} already exists", username);
-            return false;
-        }
-
-        boolean created = dao.createUser(new User(username, password));
-        if (created) LOGGER.info("User '{}' registered successfully", username);
-        return created;
+        return userRepository.save(user);
     }
 }
