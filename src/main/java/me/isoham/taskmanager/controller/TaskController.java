@@ -5,9 +5,9 @@ import me.isoham.taskmanager.dto.TaskResponse;
 import me.isoham.taskmanager.model.Task;
 import me.isoham.taskmanager.model.TaskStatus;
 import me.isoham.taskmanager.model.User;
-import me.isoham.taskmanager.repository.UserRepository;
+import me.isoham.taskmanager.security.AuthenticatedUser;
 import me.isoham.taskmanager.service.TaskService;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,18 +15,10 @@ import java.util.List;
 @RestController
 @RequestMapping("/tasks")
 public class TaskController {
-
     private final TaskService taskService;
-    private final UserRepository userRepository;
 
-    public TaskController(TaskService taskService, UserRepository userRepository) {
+    public TaskController(TaskService taskService) {
         this.taskService = taskService;
-        this.userRepository = userRepository;
-    }
-
-    private User getCurrentUser(Authentication auth) {
-        Integer userId = (Integer) auth.getPrincipal();
-        return userRepository.findById(userId).orElseThrow();
     }
 
     private TaskResponse mapTask(Task task) {
@@ -41,9 +33,9 @@ public class TaskController {
     @PostMapping
     public TaskResponse createTask(
             @RequestBody TaskRequest request,
-            Authentication auth
+            @AuthenticationPrincipal AuthenticatedUser authUser
     ) {
-        User user = getCurrentUser(auth);
+        User user = authUser.user();
 
         Task task = taskService.createTask(
                 request.title(),
@@ -56,8 +48,10 @@ public class TaskController {
     }
 
     @GetMapping
-    public List<TaskResponse> getTasks(Authentication auth) {
-        User user = getCurrentUser(auth);
+    public List<TaskResponse> getTasks(
+            @AuthenticationPrincipal AuthenticatedUser authUser
+    ) {
+        User user = authUser.user();
 
         return taskService.getTasks(user)
                 .stream()
@@ -69,9 +63,9 @@ public class TaskController {
     public TaskResponse updateStatus(
             @PathVariable int taskId,
             @RequestParam String status,
-            Authentication auth
+            @AuthenticationPrincipal AuthenticatedUser authUser
     ) {
-        User user = getCurrentUser(auth);
+        User user = authUser.user();
 
         Task task = taskService.updateStatus(
                 taskId,
@@ -85,9 +79,9 @@ public class TaskController {
     @DeleteMapping("/{taskId}")
     public void deleteTask(
             @PathVariable int taskId,
-            Authentication auth
+            @AuthenticationPrincipal AuthenticatedUser authUser
     ) {
-        User user = getCurrentUser(auth);
+        User user = authUser.user();
         taskService.deleteTask(taskId, user);
     }
 }
