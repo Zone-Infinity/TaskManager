@@ -25,14 +25,14 @@ public class TaskService {
         return taskRepository.save(task);
     }
 
-    public Task updateStatus(int taskId, TaskStatus status) {
-        Task task = taskRepository.findById(taskId).orElseThrow();
+    public Task updateStatus(int taskId, TaskStatus status, User user) {
+        Task task = taskRepository.findByIdAndUser(taskId, user).orElseThrow();
         task.setStatus(status);
 
         return taskRepository.save(task);
     }
 
-    public void deleteTask(int taskId) {
-        taskRepository.deleteById(taskId);
+    public void deleteTask(int taskId, User user) {
+        taskRepository.deleteByIdAndUser(taskId, user);
     }
 }

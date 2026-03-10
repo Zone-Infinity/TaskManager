@@ -20,7 +20,6 @@ public class UserController {
 
     @PostMapping("/register")
     public UserResponse register(@RequestBody RegisterRequest request) {
-
         User user = userService.register(
                 request.username(),
                 request.password()

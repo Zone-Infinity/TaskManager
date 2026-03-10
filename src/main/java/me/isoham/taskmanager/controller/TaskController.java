@@ -7,6 +7,7 @@ import me.isoham.taskmanager.model.TaskStatus;
 import me.isoham.taskmanager.model.User;
 import me.isoham.taskmanager.repository.UserRepository;
 import me.isoham.taskmanager.service.TaskService;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,12 +24,26 @@ public class TaskController {
         this.userRepository = userRepository;
     }
 
-    @PostMapping
-    public TaskResponse createTask(@RequestBody TaskRequest request) {
+    private User getCurrentUser(Authentication auth) {
+        Integer userId = (Integer) auth.getPrincipal();
+        return userRepository.findById(userId).orElseThrow();
+    }
 
-        User user = userRepository
-                .findById(request.userId())
-                .orElseThrow();
+    private TaskResponse mapTask(Task task) {
+        return new TaskResponse(
+                task.getId(),
+                task.getTitle(),
+                task.getDescription(),
+                task.getStatus().name()
+        );
+    }
+
+    @PostMapping
+    public TaskResponse createTask(
+            @RequestBody TaskRequest request,
+            Authentication auth
+    ) {
+        User user = getCurrentUser(auth);
 
         Task task = taskService.createTask(
                 request.title(),
@@ -37,51 +52,42 @@ public class TaskController {
                 user
         );
 
-        return new TaskResponse(
-                task.getId(),
-                task.getTitle(),
-                task.getDescription(),
-                task.getStatus().name()
-        );
+        return mapTask(task);
     }
 
-    @GetMapping("/{userId}")
-    public List<TaskResponse> getTasks(@PathVariable int userId) {
-        User user = userRepository
-                .findById(userId)
-                .orElseThrow();
+    @GetMapping
+    public List<TaskResponse> getTasks(Authentication auth) {
+        User user = getCurrentUser(auth);
 
         return taskService.getTasks(user)
                 .stream()
-                .map(task -> new TaskResponse(
-                        task.getId(),
-                        task.getTitle(),
-                        task.getDescription(),
-                        task.getStatus().name()
-                ))
+                .map(this::mapTask)
                 .toList();
     }
 
     @PatchMapping("/{taskId}")
     public TaskResponse updateStatus(
             @PathVariable int taskId,
-            @RequestParam String status
+            @RequestParam String status,
+            Authentication auth
     ) {
+        User user = getCurrentUser(auth);
+
         Task task = taskService.updateStatus(
                 taskId,
-                TaskStatus.valueOf(status)
+                TaskStatus.valueOf(status),
+                user
         );
 
-        return new TaskResponse(
-                task.getId(),
-                task.getTitle(),
-                task.getDescription(),
-                task.getStatus().name()
-        );
+        return mapTask(task);
     }
 
     @DeleteMapping("/{taskId}")
-    public void deleteTask(@PathVariable int taskId) {
-        taskService.deleteTask(taskId);
+    public void deleteTask(
+            @PathVariable int taskId,
+            Authentication auth
+    ) {
+        User user = getCurrentUser(auth);
+        taskService.deleteTask(taskId, user);
     }
 }
